@@ -29,7 +29,7 @@ def set_driver(driver_path, headless_flg):
 
 
 def main():
-    search_keyword = "高収入"
+    search_keyword = input("検索ワードを入力してください：例 [ 社名、土日休み、未経験など ]")
     # driverを起動
     if os.name == 'nt': #Windows
         driver = set_driver("chromedriver.exe", False)

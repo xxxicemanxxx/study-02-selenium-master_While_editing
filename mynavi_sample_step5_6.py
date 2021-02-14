@@ -29,7 +29,7 @@ def set_driver(driver_path, headless_flg):
 
 
 def main():
-    search_keyword = "高収入"
+    search_keyword = input("検索ワードを入力してください：例 [ 社名、土日休み、未経験など ]\r\n")
     # driverを起動
     if os.name == 'nt': #Windows
         driver = set_driver("chromedriver.exe", False)
@@ -63,7 +63,7 @@ def main():
     #for num in range(1):   #testに使用
         # 検索結果の一番上の会社名を取得
         name_list = driver.find_elements_by_class_name("cassetteRecruit__name")
-        #tableのclassを選択 → 下層にある tbody → さらに下層の3つ目のTrを選択　これが初年度年収 →　tdに抜きたい値   
+        #tableのclassを選択 → 下層にある tbody → さらに下層の3つ目のTrを選択　これが勤務地 →　tdに抜きたい値   
         add_list = driver.find_elements_by_xpath("//table[@class='tableCondition']/tbody/tr[3]/td")
         #tableのclassを選択 → 下層にある tbody → さらに下層の5つ目のTrを選択　これが初年度年収 →　tdに抜きたい値           
         mony_list = driver.find_elements_by_xpath("//table[@class='tableCondition']/tbody/tr[5]/td")
@@ -75,10 +75,15 @@ def main():
                 name1 = name.text.split(' ')[0]
                 #X = name.text.find(' ')                   #こっちでもOK
                 #print(count,name.text[0:X],mony1)         #こっちでもOK
-
+                
                 #出力
-                print(count,name1,add.text,mony.text)
+                #print(count,name1,add.text,mony.text)
 
+                #Data list生成
+                exp_name_list.append(name1)
+                exp_add_list.append(add.text)
+                exp_mony_list.append(mony.text)
+            
             #エラーの回避策
             except Exception as e:
                 print(e)
@@ -97,6 +102,22 @@ def main():
             time.sleep(3)
         else:
             break
+    
+    #取得したDataをpandasモジュールを使ってCSVファイルに出力
+    df_data_name = 'my_navi_data.csv'
+    df_data= pd.DataFrame({'会社名':exp_name_list,'勤務地':exp_add_list,'初年度年収':exp_mony_list})
+    #同じファイルが存在するかを確認。同じものがあった場合に名前を変更
+    if os.path.exists('my_navi_data.csv'):
+        df_data_name = input("『my_navi_data.csv』以外のファイル名で保存します。『.csv』は不要\r\n") + ".csv"
+        print("『{}』で保存します".format(df_data_name))
+    else:
+        print("『{}』で保存します".format(df_data_name))
+    #to_csv関数を使って、csvファイルを書き出す。
+    #encodingの引数で、utf-8-sig：デフォルト状態でcsvファイルに書き込む
+    df_data.to_csv(df_data_name,encoding = "utf-8-sig")
+    #encodingの引数で、shift-jisでcsvファイルに書き込んだときに文字化けを防ぐ
+    #df_data.to_csv(df_data_name,encoding = 'shift-jis') #エラー発生
+
 
 # 直接起動された場合はmain()を起動(モジュールとして呼び出された場合は起動しないようにするため)
 if __name__ == "__main__":
